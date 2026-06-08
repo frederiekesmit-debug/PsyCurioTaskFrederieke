@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 7060563449277368399}
   - component: {fileID: 1846006317376012027}
   - component: {fileID: 1181633827561187655}
-  - component: {fileID: 7391022440965749669}
   - component: {fileID: 4532334122069695329}
+  - component: {fileID: -5673675948612667345}
   m_Layer: 0
   m_Name: Object1
   m_TagString: Untagged
@@ -114,20 +114,6 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &7391022440965749669
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6905451665835478064}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: aea8199d9a7191e42b2bb07987b499f0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ClickToDuplicateToCounter
-  counter: {fileID: 0}
-  prefabToSpawn: {fileID: 6905451665835478064}
 --- !u!114 &4532334122069695329
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -142,3 +128,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Apple
   price: 2
+--- !u!114 &-5673675948612667345
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6905451665835478064}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c4bd2a2cf9387047b04a2b285c17e48, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CounterItem

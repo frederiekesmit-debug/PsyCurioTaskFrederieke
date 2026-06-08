@@ -6,7 +6,6 @@ public class Counter : MonoBehaviour
     [SerializeField] private Vector3 placedScale = new Vector3(0.5f, 0.5f, 0.5f);
 
     private GameObject[] placedItems;
-    private int nextSlotIndex = 0;
 
     private void Awake()
     {
@@ -15,26 +14,54 @@ public class Counter : MonoBehaviour
 
     public bool TryPlace(GameObject obj)
     {
-        if (nextSlotIndex >= slots.Length)
+        int freeSlot = GetFirstFreeSlot();
+
+        if (freeSlot == -1)
         {
             Debug.Log("Counter is full!");
             return false;
         }
 
-        Transform slot = slots[nextSlotIndex];
+        Transform slot = slots[freeSlot];
 
         obj.transform.position = slot.position;
         obj.transform.rotation = slot.rotation;
         obj.transform.localScale = placedScale;
 
-        placedItems[nextSlotIndex] = obj;
-        nextSlotIndex++;
+        placedItems[freeSlot] = obj;
+
+        CounterItem item = obj.AddComponent<CounterItem>();
+        item.Setup(this, freeSlot);
 
         return true;
+    }
+
+    public bool IsFull()
+    {
+        return GetFirstFreeSlot() == -1;
+    }
+
+    public void RemoveItem(int index)
+    {
+        if (index < 0 || index >= placedItems.Length)
+            return;
+
+        placedItems[index] = null;
     }
 
     public GameObject[] GetPlacedItems()
     {
         return placedItems;
+    }
+
+    private int GetFirstFreeSlot()
+    {
+        for (int i = 0; i < placedItems.Length; i++)
+        {
+            if (placedItems[i] == null)
+                return i;
+        }
+
+        return -1;
     }
 }

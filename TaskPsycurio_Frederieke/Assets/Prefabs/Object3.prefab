@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 4235265248333167293}
   - component: {fileID: 6909771348110068280}
   - component: {fileID: 8392104801439355771}
-  - component: {fileID: 3920385015592801548}
   - component: {fileID: -1749264406202474554}
+  - component: {fileID: -2985359152149425874}
   m_Layer: 0
   m_Name: Object3
   m_TagString: Untagged
@@ -116,20 +116,6 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
---- !u!114 &3920385015592801548
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7764039860289899186}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: aea8199d9a7191e42b2bb07987b499f0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ClickToDuplicateToCounter
-  counter: {fileID: 0}
-  prefabToSpawn: {fileID: 7764039860289899186}
 --- !u!114 &-1749264406202474554
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -144,3 +130,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Chips
   price: 3
+--- !u!114 &-2985359152149425874
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7764039860289899186}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c4bd2a2cf9387047b04a2b285c17e48, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CounterItem

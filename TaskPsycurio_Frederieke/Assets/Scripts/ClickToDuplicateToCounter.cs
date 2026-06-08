@@ -10,9 +10,14 @@ public class ClickToDuplicateToCounter : MonoBehaviour, IClickable
         if (counter == null || prefabToSpawn == null)
             return;
 
-        if (counter.TryPlace(Instantiate(prefabToSpawn)))
+        // BLOCK SPAWN IF FULL
+        if (counter.IsFull())
         {
-            Debug.Log("Spawned on counter");
+            Debug.Log("Counter is full!");
+            return;
         }
+
+        GameObject obj = Instantiate(prefabToSpawn);
+        counter.TryPlace(obj);
     }
 }

@@ -40,7 +40,11 @@ public class Register : MonoBehaviour, IClickable
             if (items[i] != null)
             {
                 hasItems = true;
-                result += items[i].name + ", ";
+
+                // removes "(Clone)" from Unity object names
+                string itemName = items[i].name.Replace("(Clone)", "").Trim();
+
+                result += itemName + ", ";
             }
         }
 
@@ -49,7 +53,7 @@ public class Register : MonoBehaviour, IClickable
             return "You've selected nothing";
         }
 
-        // remove last comma
+        // clean trailing comma
         result = result.TrimEnd(',', ' ');
 
         return result;

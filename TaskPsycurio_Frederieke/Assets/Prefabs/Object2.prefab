@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 8308024265999397604}
   - component: {fileID: 7527892369683046762}
   - component: {fileID: 5262388799289308940}
+  - component: {fileID: -2602737437109370489}
   m_Layer: 0
   m_Name: Object2
   m_TagString: Untagged
@@ -129,3 +130,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ClickToDuplicateToCounter
   counter: {fileID: 0}
   prefabToSpawn: {fileID: 7990847246426351921}
+--- !u!114 &-2602737437109370489
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7990847246426351921}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69de3d98aab5d6b4db71d46f23aedd6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ItemData
+  itemName: Toy
+  price: 5

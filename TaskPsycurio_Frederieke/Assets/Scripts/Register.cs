@@ -33,7 +33,9 @@ public class Register : MonoBehaviour, IClickable
         }
 
         bool hasItems = false;
-        string result = "You are buying: ";
+        string result = "You are buying:\n";
+
+        int total = 0;
 
         for (int i = 0; i < items.Length; i++)
         {
@@ -41,10 +43,17 @@ public class Register : MonoBehaviour, IClickable
             {
                 hasItems = true;
 
-                // removes "(Clone)" from Unity object names
-                string itemName = items[i].name.Replace("(Clone)", "").Trim();
+                ItemData data = items[i].GetComponent<ItemData>();
 
-                result += itemName + ", ";
+                string itemName = data != null
+                    ? data.GetItemName()
+                    : items[i].name.Replace("(Clone)", "").Trim();
+
+                int price = data != null ? data.GetPrice() : 0;
+
+                total += price;
+
+                result += $"- {itemName} : ${price}\n";
             }
         }
 
@@ -53,8 +62,7 @@ public class Register : MonoBehaviour, IClickable
             return "You've selected nothing";
         }
 
-        // clean trailing comma
-        result = result.TrimEnd(',', ' ');
+        result += $"\nTotal: ${total}";
 
         return result;
     }

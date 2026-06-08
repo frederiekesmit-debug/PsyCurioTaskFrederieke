@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 1846006317376012027}
   - component: {fileID: 1181633827561187655}
   - component: {fileID: 7391022440965749669}
+  - component: {fileID: 4532334122069695329}
   m_Layer: 0
   m_Name: Object1
   m_TagString: Untagged
@@ -127,3 +128,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ClickToDuplicateToCounter
   counter: {fileID: 0}
   prefabToSpawn: {fileID: 6905451665835478064}
+--- !u!114 &4532334122069695329
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6905451665835478064}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69de3d98aab5d6b4db71d46f23aedd6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ItemData
+  itemName: Apple
+  price: 2

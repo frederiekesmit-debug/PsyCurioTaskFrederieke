@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 7884592803463323868}
   - component: {fileID: 8308024265999397604}
   - component: {fileID: 7527892369683046762}
+  - component: {fileID: 5262388799289308940}
   m_Layer: 0
   m_Name: Object2
   m_TagString: Untagged
@@ -114,3 +115,17 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &5262388799289308940
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7990847246426351921}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aea8199d9a7191e42b2bb07987b499f0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ClickToDuplicateToCounter
+  counter: {fileID: 0}
+  prefabToSpawn: {fileID: 7990847246426351921}

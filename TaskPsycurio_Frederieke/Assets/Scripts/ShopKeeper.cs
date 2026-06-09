@@ -41,48 +41,54 @@ public class Shopkeeper : MonoBehaviour
         return busy;
     }
 
-    public void FulfillOrder(GameObject prefabToSpawn, Transform shelfPoint)
+    // NOW TAKES GRAB POINT (not shelf object)
+    public void FulfillOrder(GameObject prefabToSpawn, Transform grabPoint)
     {
         if (busy)
             return;
 
-        StartCoroutine(FulfillOrderRoutine(prefabToSpawn, shelfPoint));
+        StartCoroutine(FulfillOrderRoutine(prefabToSpawn, grabPoint));
     }
 
-    private IEnumerator FulfillOrderRoutine(GameObject prefabToSpawn, Transform shelfPoint)
+    private IEnumerator FulfillOrderRoutine(GameObject prefabToSpawn, Transform grabPoint)
     {
         busy = true;
 
+        // Stop if counter is full
         if (counter.IsFull())
         {
             busy = false;
             yield break;
         }
 
-        // Walk to shelf
-        yield return MoveTo(shelfPoint.position);
+        // -----------------------
+        // WALK TO SHELF GRAB POINT
+        // -----------------------
+        yield return MoveTo(grabPoint.position);
 
         // Face shelf
-        yield return FaceTarget(shelfPoint.position);
+        yield return FaceTarget(grabPoint.position);
 
-        // Play pickup animation
+        // Pickup animation
         animator.SetTrigger("PickUp");
         yield return new WaitForSeconds(pickupDuration);
 
-        // Spawn item into hand
+        // Spawn item in hand
         GameObject heldItem = Instantiate(prefabToSpawn);
 
         heldItem.transform.SetParent(handPoint);
         heldItem.transform.localPosition = Vector3.zero;
         heldItem.transform.localRotation = Quaternion.identity;
 
-        // Walk to counter
+        // -----------------------
+        // WALK TO COUNTER
+        // -----------------------
         yield return MoveTo(counterPoint.position);
 
         // Face counter
         yield return FaceTarget(counterPoint.position);
 
-        // Small pause so it doesn't look instant
+        // Small pause for polish
         yield return new WaitForSeconds(0.25f);
 
         // Place item
@@ -93,10 +99,11 @@ public class Shopkeeper : MonoBehaviour
             Destroy(heldItem);
         }
 
-        // Walk back home
+        // -----------------------
+        // RETURN HOME
+        // -----------------------
         yield return MoveTo(homePosition);
 
-        // Return to original rotation
         yield return RotateTo(homeRotation);
 
         busy = false;

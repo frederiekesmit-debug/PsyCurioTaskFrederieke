@@ -1,20 +1,28 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class Shopkeeper : MonoBehaviour
 {
+    [Header("References")]
     [SerializeField] private Counter counter;
-    [SerializeField] private float moveSpeed = 3f;
-
-    [Header("Item Holding")]
     [SerializeField] private Transform handPoint;
+    [SerializeField] private Animator animator;
 
+    private NavMeshAgent agent;
     private Vector3 homePosition;
+
     private bool busy;
 
     private void Awake()
     {
+        agent = GetComponent<NavMeshAgent>();
         homePosition = transform.position;
+    }
+
+    private void Update()
+    {
+        animator.SetFloat("Speed", agent.velocity.magnitude);
     }
 
     public bool IsBusy()
@@ -34,10 +42,17 @@ public class Shopkeeper : MonoBehaviour
     {
         busy = true;
 
+        // Counter full?
+        if (counter.IsFull())
+        {
+            busy = false;
+            yield break;
+        }
+
         // Walk to shelf
         yield return MoveTo(shelfPoint.position);
 
-        // Create item in hand
+        // Create held item
         GameObject heldItem = Instantiate(prefabToSpawn);
 
         heldItem.transform.SetParent(handPoint);
@@ -50,30 +65,29 @@ public class Shopkeeper : MonoBehaviour
         // Remove from hand
         heldItem.transform.SetParent(null);
 
-        // Place on counter
+        // Place item
         if (!counter.TryPlace(heldItem))
         {
             Destroy(heldItem);
         }
 
-        // Return home
+        // Walk home
         yield return MoveTo(homePosition);
 
         busy = false;
     }
 
-    private IEnumerator MoveTo(Vector3 target)
+    private IEnumerator MoveTo(Vector3 destination)
     {
-        while (Vector3.Distance(transform.position, target) > 0.05f)
-        {
-            transform.position = Vector3.MoveTowards(
-                transform.position,
-                target,
-                moveSpeed * Time.deltaTime);
+        agent.SetDestination(destination);
 
+        while (agent.pathPending)
             yield return null;
-        }
 
-        transform.position = target;
+        while (agent.remainingDistance > agent.stoppingDistance)
+            yield return null;
+
+        while (agent.velocity.sqrMagnitude > 0.01f)
+            yield return null;
     }
 }

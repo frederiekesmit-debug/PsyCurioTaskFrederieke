@@ -26,6 +26,12 @@ public class Shopkeeper : MonoBehaviour
 
         homePosition = transform.position;
         homeRotation = transform.rotation;
+
+        agent.angularSpeed = 0f;        // IMPORTANT: we fully control rotation now
+        agent.updateRotation = false;    // IMPORTANT
+        agent.acceleration = 12f;
+        agent.stoppingDistance = 0.2f;
+        agent.autoBraking = true;
     }
 
     private void Update()
@@ -41,7 +47,6 @@ public class Shopkeeper : MonoBehaviour
         return busy;
     }
 
-    // NOW TAKES GRAB POINT (not shelf object)
     public void FulfillOrder(GameObject prefabToSpawn, Transform grabPoint)
     {
         if (busy)
@@ -54,7 +59,6 @@ public class Shopkeeper : MonoBehaviour
     {
         busy = true;
 
-        // Stop if counter is full
         if (counter.IsFull())
         {
             busy = false;
@@ -62,18 +66,17 @@ public class Shopkeeper : MonoBehaviour
         }
 
         // -----------------------
-        // WALK TO SHELF GRAB POINT
+        // WALK TO SHELF
         // -----------------------
         yield return MoveTo(grabPoint.position);
 
-        // Face shelf
+        // Face shelf (intentional action)
         yield return FaceTarget(grabPoint.position);
 
-        // Pickup animation
+        // Pickup
         animator.SetTrigger("PickUp");
         yield return new WaitForSeconds(pickupDuration);
 
-        // Spawn item in hand
         GameObject heldItem = Instantiate(prefabToSpawn);
 
         heldItem.transform.SetParent(handPoint);
@@ -85,13 +88,11 @@ public class Shopkeeper : MonoBehaviour
         // -----------------------
         yield return MoveTo(counterPoint.position);
 
-        // Face counter
+        // Face counter (intentional action)
         yield return FaceTarget(counterPoint.position);
 
-        // Small pause for polish
         yield return new WaitForSeconds(0.25f);
 
-        // Place item
         heldItem.transform.SetParent(null);
 
         if (!counter.TryPlace(heldItem))
@@ -104,7 +105,16 @@ public class Shopkeeper : MonoBehaviour
         // -----------------------
         yield return MoveTo(homePosition);
 
-        yield return RotateTo(homeRotation);
+        // Face camera when returning home (important fix)
+        Camera cam = Camera.main;
+        if (cam != null)
+        {
+            yield return FaceTarget(cam.transform.position);
+        }
+        else
+        {
+            yield return RotateTo(homeRotation);
+        }
 
         busy = false;
     }
@@ -112,25 +122,54 @@ public class Shopkeeper : MonoBehaviour
     private IEnumerator MoveTo(Vector3 destination)
     {
         agent.SetDestination(destination);
+        agent.updateRotation = false;
 
-        while (agent.pathPending)
-            yield return null;
+        Vector3 direction = destination - transform.position;
+        direction.y = 0f;
 
-        while (agent.remainingDistance > agent.stoppingDistance)
-            yield return null;
+        //  immediate initial facing (this is the key change)
+        if (direction.sqrMagnitude > 0.001f)
+        {
+            transform.rotation = Quaternion.LookRotation(direction);
+        }
 
-        while (agent.velocity.sqrMagnitude > 0.01f)
+        while (true)
+        {
+            if (!agent.pathPending)
+            {
+                if (agent.remainingDistance <= agent.stoppingDistance)
+                {
+                    if (!agent.hasPath || agent.velocity.sqrMagnitude < 0.01f)
+                        break;
+                }
+            }
+
+            //  continuously re-aim toward final destination (not velocity, not steering)
+            Vector3 toTarget = destination - transform.position;
+            toTarget.y = 0f;
+
+            if (toTarget.sqrMagnitude > 0.001f)
+            {
+                Quaternion targetRot = Quaternion.LookRotation(toTarget);
+
+                transform.rotation = Quaternion.Slerp(
+                    transform.rotation,
+                    targetRot,
+                    10f * Time.deltaTime);
+            }
+
             yield return null;
+        }
     }
 
-    private IEnumerator FaceTarget(Vector3 targetPosition)
+    private IEnumerator FaceTarget(Vector3 targetPosition, float speed = 5f)
     {
         agent.updateRotation = false;
 
         Vector3 direction = targetPosition - transform.position;
         direction.y = 0f;
 
-        if (direction.sqrMagnitude < 0.01f)
+        if (direction.sqrMagnitude < 0.001f)
         {
             agent.updateRotation = true;
             yield break;
@@ -143,7 +182,7 @@ public class Shopkeeper : MonoBehaviour
             transform.rotation = Quaternion.Slerp(
                 transform.rotation,
                 targetRotation,
-                8f * Time.deltaTime);
+                speed * Time.deltaTime);
 
             yield return null;
         }
@@ -152,7 +191,7 @@ public class Shopkeeper : MonoBehaviour
         agent.updateRotation = true;
     }
 
-    private IEnumerator RotateTo(Quaternion targetRotation)
+    private IEnumerator RotateTo(Quaternion targetRotation, float speed = 5f)
     {
         agent.updateRotation = false;
 
@@ -161,7 +200,7 @@ public class Shopkeeper : MonoBehaviour
             transform.rotation = Quaternion.Slerp(
                 transform.rotation,
                 targetRotation,
-                5f * Time.deltaTime);
+                speed * Time.deltaTime);
 
             yield return null;
         }

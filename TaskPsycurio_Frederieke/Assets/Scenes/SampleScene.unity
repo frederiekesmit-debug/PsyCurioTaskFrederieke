@@ -199,7 +199,7 @@ MonoBehaviour:
   counterPoint: {fileID: 1242071011}
   handPoint: {fileID: 1925925807}
   animator: {fileID: 3992125}
-  pickupDuration: 1
+  pickupDuration: 2
 --- !u!195 &3992130
 NavMeshAgent:
   m_ObjectHideFlags: 0

@@ -27,8 +27,8 @@ public class Shopkeeper : MonoBehaviour
         homePosition = transform.position;
         homeRotation = transform.rotation;
 
-        agent.angularSpeed = 0f;        // IMPORTANT: we fully control rotation now
-        agent.updateRotation = false;    // IMPORTANT
+        agent.angularSpeed = 0f;
+        agent.updateRotation = false;
         agent.acceleration = 12f;
         agent.stoppingDistance = 0.2f;
         agent.autoBraking = true;
@@ -69,31 +69,43 @@ public class Shopkeeper : MonoBehaviour
         // WALK TO SHELF
         // -----------------------
         yield return MoveTo(grabPoint.position);
-
-        // Face shelf (intentional action)
         yield return FaceTarget(grabPoint.position);
 
-        // Pickup
         animator.SetTrigger("PickUp");
         yield return new WaitForSeconds(pickupDuration);
 
         GameObject heldItem = Instantiate(prefabToSpawn);
 
-        heldItem.transform.SetParent(handPoint);
+        // =========================================================
+        // OPTION B FIX: preserve world scale correctly when parenting
+        // =========================================================
+
+        // 1. Capture world scale BEFORE parenting
+        Vector3 worldScale = heldItem.transform.lossyScale;
+
+        // 2. Attach to hand while preserving world transform
+        heldItem.transform.SetParent(handPoint, true);
+
+        // 3. Reset local pose
         heldItem.transform.localPosition = Vector3.zero;
         heldItem.transform.localRotation = Quaternion.identity;
+
+        // 4. Re-apply correct scale in local space
+        heldItem.transform.localScale = new Vector3(
+            worldScale.x / handPoint.lossyScale.x,
+            worldScale.y / handPoint.lossyScale.y,
+            worldScale.z / handPoint.lossyScale.z
+        );
 
         // -----------------------
         // WALK TO COUNTER
         // -----------------------
         yield return MoveTo(counterPoint.position);
-
-        // Face counter (intentional action)
         yield return FaceTarget(counterPoint.position);
 
         yield return new WaitForSeconds(0.25f);
 
-        heldItem.transform.SetParent(null);
+        heldItem.transform.SetParent(null, true);
 
         if (!counter.TryPlace(heldItem))
         {
@@ -105,7 +117,6 @@ public class Shopkeeper : MonoBehaviour
         // -----------------------
         yield return MoveTo(homePosition);
 
-        // Face camera when returning home (important fix)
         Camera cam = Camera.main;
         if (cam != null)
         {
@@ -122,16 +133,6 @@ public class Shopkeeper : MonoBehaviour
     private IEnumerator MoveTo(Vector3 destination)
     {
         agent.SetDestination(destination);
-        agent.updateRotation = false;
-
-        Vector3 direction = destination - transform.position;
-        direction.y = 0f;
-
-        //  immediate initial facing (this is the key change)
-        if (direction.sqrMagnitude > 0.001f)
-        {
-            transform.rotation = Quaternion.LookRotation(direction);
-        }
 
         while (true)
         {
@@ -144,7 +145,6 @@ public class Shopkeeper : MonoBehaviour
                 }
             }
 
-            //  continuously re-aim toward final destination (not velocity, not steering)
             Vector3 toTarget = destination - transform.position;
             toTarget.y = 0f;
 
@@ -164,16 +164,11 @@ public class Shopkeeper : MonoBehaviour
 
     private IEnumerator FaceTarget(Vector3 targetPosition, float speed = 5f)
     {
-        agent.updateRotation = false;
-
         Vector3 direction = targetPosition - transform.position;
         direction.y = 0f;
 
         if (direction.sqrMagnitude < 0.001f)
-        {
-            agent.updateRotation = true;
             yield break;
-        }
 
         Quaternion targetRotation = Quaternion.LookRotation(direction);
 
@@ -188,13 +183,10 @@ public class Shopkeeper : MonoBehaviour
         }
 
         transform.rotation = targetRotation;
-        agent.updateRotation = true;
     }
 
     private IEnumerator RotateTo(Quaternion targetRotation, float speed = 5f)
     {
-        agent.updateRotation = false;
-
         while (Quaternion.Angle(transform.rotation, targetRotation) > 1f)
         {
             transform.rotation = Quaternion.Slerp(
@@ -206,6 +198,5 @@ public class Shopkeeper : MonoBehaviour
         }
 
         transform.rotation = targetRotation;
-        agent.updateRotation = true;
     }
 }

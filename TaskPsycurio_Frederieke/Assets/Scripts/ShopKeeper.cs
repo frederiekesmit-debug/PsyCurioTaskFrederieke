@@ -2,7 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class Shopkeeper : MonoBehaviour
+public class Shopkeeper : MonoBehaviour, IClickable
 {
     [Header("References")]
     [SerializeField] private Counter counter;
@@ -12,6 +12,7 @@ public class Shopkeeper : MonoBehaviour
 
     [Header("Animation")]
     [SerializeField] private float pickupDuration = 1f;
+    [SerializeField] private string waveTrigger = "Wave";
 
     private NavMeshAgent agent;
 
@@ -19,6 +20,7 @@ public class Shopkeeper : MonoBehaviour
     private Quaternion homeRotation;
 
     private bool busy;
+    private bool isWaving;
 
     private void Awake()
     {
@@ -44,12 +46,38 @@ public class Shopkeeper : MonoBehaviour
 
     public bool IsBusy()
     {
-        return busy;
+        return busy || isWaving;
+    }
+
+    // CLICK ENTRY POINT (replaces WaveCharacter)
+    public void OnClick()
+    {
+        TryWave();
+    }
+
+    public void TryWave()
+    {
+        if (IsBusy())
+            return;
+
+        StartCoroutine(WaveRoutine());
+    }
+
+    private IEnumerator WaveRoutine()
+    {
+        isWaving = true;
+
+        animator.SetTrigger(waveTrigger);
+
+        // Optional: wait until animation finishes or a fixed time
+        yield return new WaitForSeconds(1.2f);
+
+        isWaving = false;
     }
 
     public void FulfillOrder(GameObject prefabToSpawn, Transform grabPoint)
     {
-        if (busy)
+        if (IsBusy())
             return;
 
         StartCoroutine(FulfillOrderRoutine(prefabToSpawn, grabPoint));
@@ -57,7 +85,7 @@ public class Shopkeeper : MonoBehaviour
 
     public void RemoveCounterItem(CounterItem item)
     {
-        if (busy || item == null)
+        if (IsBusy() || item == null)
             return;
 
         StartCoroutine(RemoveCounterItemRoutine(item));
@@ -73,7 +101,6 @@ public class Shopkeeper : MonoBehaviour
             yield break;
         }
 
-        // Walk to shelf
         yield return MoveTo(grabPoint.position);
         yield return FaceTarget(grabPoint.position);
 
@@ -94,7 +121,6 @@ public class Shopkeeper : MonoBehaviour
             worldScale.z / handPoint.lossyScale.z
         );
 
-        // Walk to counter
         yield return MoveTo(counterPoint.position);
         yield return FaceTarget(counterPoint.position);
 
@@ -107,18 +133,13 @@ public class Shopkeeper : MonoBehaviour
             Destroy(heldItem);
         }
 
-        // Return home
         yield return MoveTo(homePosition);
 
         Camera cam = Camera.main;
         if (cam != null)
-        {
             yield return FaceTarget(cam.transform.position);
-        }
         else
-        {
             yield return RotateTo(homeRotation);
-        }
 
         busy = false;
     }
@@ -129,18 +150,14 @@ public class Shopkeeper : MonoBehaviour
 
         Transform target = item.transform;
 
-        // Walk to item
         yield return MoveTo(target.position);
         yield return FaceTarget(target.position);
 
-        // Pickup animation
         animator.SetTrigger("PickUp");
         yield return new WaitForSeconds(pickupDuration);
 
-        // Preserve scale before parenting
         Vector3 worldScale = item.transform.lossyScale;
 
-        // Attach to hand
         item.transform.SetParent(handPoint, true);
         item.transform.localPosition = Vector3.zero;
         item.transform.localRotation = Quaternion.identity;
@@ -151,25 +168,19 @@ public class Shopkeeper : MonoBehaviour
             worldScale.z / handPoint.lossyScale.z
         );
 
-        // Free slot on counter
         counter.RemoveItem(item.Index);
 
         yield return new WaitForSeconds(0.25f);
 
         Destroy(item.gameObject);
 
-        // Return home
         yield return MoveTo(homePosition);
 
         Camera cam = Camera.main;
         if (cam != null)
-        {
             yield return FaceTarget(cam.transform.position);
-        }
         else
-        {
             yield return RotateTo(homeRotation);
-        }
 
         busy = false;
     }
@@ -180,13 +191,11 @@ public class Shopkeeper : MonoBehaviour
 
         while (true)
         {
-            if (!agent.pathPending)
+            if (!agent.pathPending &&
+                agent.remainingDistance <= agent.stoppingDistance &&
+                (!agent.hasPath || agent.velocity.sqrMagnitude < 0.01f))
             {
-                if (agent.remainingDistance <= agent.stoppingDistance)
-                {
-                    if (!agent.hasPath || agent.velocity.sqrMagnitude < 0.01f)
-                        break;
-                }
+                break;
             }
 
             Vector3 toTarget = destination - transform.position;
@@ -195,11 +204,7 @@ public class Shopkeeper : MonoBehaviour
             if (toTarget.sqrMagnitude > 0.001f)
             {
                 Quaternion targetRot = Quaternion.LookRotation(toTarget);
-
-                transform.rotation = Quaternion.Slerp(
-                    transform.rotation,
-                    targetRot,
-                    10f * Time.deltaTime);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, 10f * Time.deltaTime);
             }
 
             yield return null;
@@ -218,11 +223,7 @@ public class Shopkeeper : MonoBehaviour
 
         while (Quaternion.Angle(transform.rotation, targetRotation) > 1f)
         {
-            transform.rotation = Quaternion.Slerp(
-                transform.rotation,
-                targetRotation,
-                speed * Time.deltaTime);
-
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, speed * Time.deltaTime);
             yield return null;
         }
 
@@ -233,11 +234,7 @@ public class Shopkeeper : MonoBehaviour
     {
         while (Quaternion.Angle(transform.rotation, targetRotation) > 1f)
         {
-            transform.rotation = Quaternion.Slerp(
-                transform.rotation,
-                targetRotation,
-                speed * Time.deltaTime);
-
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, speed * Time.deltaTime);
             yield return null;
         }
 

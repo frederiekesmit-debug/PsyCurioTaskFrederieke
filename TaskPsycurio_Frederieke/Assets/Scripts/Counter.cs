@@ -3,7 +3,7 @@ using UnityEngine;
 public class Counter : MonoBehaviour
 {
     [SerializeField] private Transform[] slots = new Transform[5];
-    [SerializeField] private Vector3 placedScale = new Vector3(0.5f, 0.5f, 0.5f);
+    [SerializeField] private Vector3 placedScale = new Vector3(0.8f, 0.8f, 0.8f);
 
     private GameObject[] placedItems;
 

@@ -6,19 +6,39 @@ public class SpeechBubble : MonoBehaviour
     [SerializeField] private GameObject bubbleRoot;
     [SerializeField] private TMP_Text text;
 
-    public void ShowMessage(string message, float duration = 3f)
+    private System.Collections.IEnumerator activeRoutine;
+
+    public void ShowMessage(string message)
     {
-        StopAllCoroutines();
-        StartCoroutine(Display(message, duration));
+        if (activeRoutine != null)
+            StopCoroutine(activeRoutine);
+
+        activeRoutine = Display(message);
+        StartCoroutine(activeRoutine);
     }
 
-    private System.Collections.IEnumerator Display(string msg, float duration)
+    public void Hide()
+    {
+        if (activeRoutine != null)
+        {
+            StopCoroutine(activeRoutine);
+            activeRoutine = null;
+        }
+
+        bubbleRoot.SetActive(false);
+    }
+
+    public bool IsVisible()
+    {
+        return bubbleRoot.activeSelf;
+    }
+
+    private System.Collections.IEnumerator Display(string msg)
     {
         bubbleRoot.SetActive(true);
         text.text = msg;
 
-        yield return new WaitForSeconds(duration);
-
-        bubbleRoot.SetActive(false);
+        // stays open until manually closed
+        yield return null;
     }
 }

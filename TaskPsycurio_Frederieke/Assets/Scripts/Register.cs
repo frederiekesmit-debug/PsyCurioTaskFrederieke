@@ -5,6 +5,8 @@ public class Register : MonoBehaviour, IClickable
     [SerializeField] private Counter counter;
     [SerializeField] private SpeechBubble speechBubble;
 
+    private bool isBubbleOpen;
+
     private void OnEnable()
     {
         if (counter != null)
@@ -17,29 +19,33 @@ public class Register : MonoBehaviour, IClickable
             counter.OnItemsChanged -= RefreshUI;
     }
 
+    public void OnClick()
+    {
+        if (counter == null || speechBubble == null)
+        {
+            Debug.LogError("Register missing references!");
+            return;
+        }
+
+        // CLOSE
+        if (isBubbleOpen)
+        {
+            speechBubble.Hide();
+            isBubbleOpen = false;
+            return;
+        }
+
+        // OPEN
+        speechBubble.ShowMessage(BuildOrderMessage());
+        isBubbleOpen = true;
+    }
+
     private void RefreshUI()
     {
+        if (!isBubbleOpen) return;
         if (speechBubble == null) return;
 
         speechBubble.ShowMessage(BuildOrderMessage());
-    }
-
-    public void OnClick()
-    {
-        if (counter == null)
-        {
-            Debug.LogError("Counter is not assigned on Register!");
-            return;
-        }
-
-        if (speechBubble == null)
-        {
-            Debug.LogError("SpeechBubble is not assigned on Register!");
-            return;
-        }
-
-        string message = BuildOrderMessage();
-        speechBubble.ShowMessage(message);
     }
 
     private string BuildOrderMessage()
@@ -47,13 +53,10 @@ public class Register : MonoBehaviour, IClickable
         GameObject[] items = counter.GetPlacedItems();
 
         if (items == null || items.Length == 0)
-        {
             return "You've selected nothing";
-        }
 
         bool hasItems = false;
         string result = "You are buying:\n";
-
         int total = 0;
 
         for (int i = 0; i < items.Length; i++)
@@ -77,12 +80,9 @@ public class Register : MonoBehaviour, IClickable
         }
 
         if (!hasItems)
-        {
             return "You've selected nothing";
-        }
 
         result += $"\nTotal: ${total}";
-
         return result;
     }
 }

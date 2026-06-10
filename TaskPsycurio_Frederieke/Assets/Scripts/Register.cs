@@ -5,6 +5,25 @@ public class Register : MonoBehaviour, IClickable
     [SerializeField] private Counter counter;
     [SerializeField] private SpeechBubble speechBubble;
 
+    private void OnEnable()
+    {
+        if (counter != null)
+            counter.OnItemsChanged += RefreshUI;
+    }
+
+    private void OnDisable()
+    {
+        if (counter != null)
+            counter.OnItemsChanged -= RefreshUI;
+    }
+
+    private void RefreshUI()
+    {
+        if (speechBubble == null) return;
+
+        speechBubble.ShowMessage(BuildOrderMessage());
+    }
+
     public void OnClick()
     {
         if (counter == null)

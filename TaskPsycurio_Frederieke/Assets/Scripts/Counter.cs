@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class Counter : MonoBehaviour
 {
+    public event System.Action OnItemsChanged;
+
     [SerializeField] private Transform[] slots = new Transform[5];
     [SerializeField] private Vector3 placedScale = new Vector3(0.8f, 0.8f, 0.8f);
 
@@ -12,7 +14,6 @@ public class Counter : MonoBehaviour
     {
         placedItems = new List<GameObject>(slots.Length);
 
-        // Pre-fill so indices match slot positions
         for (int i = 0; i < slots.Length; i++)
         {
             placedItems.Add(null);
@@ -37,19 +38,14 @@ public class Counter : MonoBehaviour
 
         placedItems[freeSlot] = obj;
 
-        // Ensure only one CounterItem exists
         CounterItem item = obj.GetComponent<CounterItem>();
         if (item == null)
             item = obj.AddComponent<CounterItem>();
 
         item.Setup(this, freeSlot);
 
+        NotifyChange();
         return true;
-    }
-
-    public bool IsFull()
-    {
-        return GetFirstFreeSlot() == -1;
     }
 
     public void RemoveItem(int index)
@@ -58,6 +54,13 @@ public class Counter : MonoBehaviour
             return;
 
         placedItems[index] = null;
+
+        NotifyChange();
+    }
+
+    private void NotifyChange()
+    {
+        OnItemsChanged?.Invoke();
     }
 
     public GameObject[] GetPlacedItems()
@@ -74,5 +77,10 @@ public class Counter : MonoBehaviour
         }
 
         return -1;
+    }
+
+    public bool IsFull()
+    {
+        return GetFirstFreeSlot() == -1;
     }
 }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Counter : MonoBehaviour
@@ -5,11 +6,17 @@ public class Counter : MonoBehaviour
     [SerializeField] private Transform[] slots = new Transform[5];
     [SerializeField] private Vector3 placedScale = new Vector3(0.8f, 0.8f, 0.8f);
 
-    private GameObject[] placedItems;
+    private List<GameObject> placedItems;
 
     private void Awake()
     {
-        placedItems = new GameObject[slots.Length];
+        placedItems = new List<GameObject>(slots.Length);
+
+        // Pre-fill so indices match slot positions
+        for (int i = 0; i < slots.Length; i++)
+        {
+            placedItems.Add(null);
+        }
     }
 
     public bool TryPlace(GameObject obj)
@@ -30,7 +37,11 @@ public class Counter : MonoBehaviour
 
         placedItems[freeSlot] = obj;
 
-        CounterItem item = obj.AddComponent<CounterItem>();
+        // Ensure only one CounterItem exists
+        CounterItem item = obj.GetComponent<CounterItem>();
+        if (item == null)
+            item = obj.AddComponent<CounterItem>();
+
         item.Setup(this, freeSlot);
 
         return true;
@@ -43,7 +54,7 @@ public class Counter : MonoBehaviour
 
     public void RemoveItem(int index)
     {
-        if (index < 0 || index >= placedItems.Length)
+        if (index < 0 || index >= placedItems.Count)
             return;
 
         placedItems[index] = null;
@@ -51,12 +62,12 @@ public class Counter : MonoBehaviour
 
     public GameObject[] GetPlacedItems()
     {
-        return placedItems;
+        return placedItems.ToArray();
     }
 
     private int GetFirstFreeSlot()
     {
-        for (int i = 0; i < placedItems.Length; i++)
+        for (int i = 0; i < placedItems.Count; i++)
         {
             if (placedItems[i] == null)
                 return i;

@@ -55,6 +55,14 @@ public class Shopkeeper : MonoBehaviour
         StartCoroutine(FulfillOrderRoutine(prefabToSpawn, grabPoint));
     }
 
+    public void RemoveCounterItem(CounterItem item)
+    {
+        if (busy || item == null)
+            return;
+
+        StartCoroutine(RemoveCounterItemRoutine(item));
+    }
+
     private IEnumerator FulfillOrderRoutine(GameObject prefabToSpawn, Transform grabPoint)
     {
         busy = true;
@@ -65,9 +73,7 @@ public class Shopkeeper : MonoBehaviour
             yield break;
         }
 
-        // -----------------------
-        // WALK TO SHELF
-        // -----------------------
+        // Walk to shelf
         yield return MoveTo(grabPoint.position);
         yield return FaceTarget(grabPoint.position);
 
@@ -76,30 +82,19 @@ public class Shopkeeper : MonoBehaviour
 
         GameObject heldItem = Instantiate(prefabToSpawn);
 
-        // =========================================================
-        // OPTION B FIX: preserve world scale correctly when parenting
-        // =========================================================
-
-        // 1. Capture world scale BEFORE parenting
         Vector3 worldScale = heldItem.transform.lossyScale;
 
-        // 2. Attach to hand while preserving world transform
         heldItem.transform.SetParent(handPoint, true);
-
-        // 3. Reset local pose
         heldItem.transform.localPosition = Vector3.zero;
         heldItem.transform.localRotation = Quaternion.identity;
 
-        // 4. Re-apply correct scale in local space
         heldItem.transform.localScale = new Vector3(
             worldScale.x / handPoint.lossyScale.x,
             worldScale.y / handPoint.lossyScale.y,
             worldScale.z / handPoint.lossyScale.z
         );
 
-        // -----------------------
-        // WALK TO COUNTER
-        // -----------------------
+        // Walk to counter
         yield return MoveTo(counterPoint.position);
         yield return FaceTarget(counterPoint.position);
 
@@ -112,9 +107,58 @@ public class Shopkeeper : MonoBehaviour
             Destroy(heldItem);
         }
 
-        // -----------------------
-        // RETURN HOME
-        // -----------------------
+        // Return home
+        yield return MoveTo(homePosition);
+
+        Camera cam = Camera.main;
+        if (cam != null)
+        {
+            yield return FaceTarget(cam.transform.position);
+        }
+        else
+        {
+            yield return RotateTo(homeRotation);
+        }
+
+        busy = false;
+    }
+
+    private IEnumerator RemoveCounterItemRoutine(CounterItem item)
+    {
+        busy = true;
+
+        Transform target = item.transform;
+
+        // Walk to item
+        yield return MoveTo(target.position);
+        yield return FaceTarget(target.position);
+
+        // Pickup animation
+        animator.SetTrigger("PickUp");
+        yield return new WaitForSeconds(pickupDuration);
+
+        // Preserve scale before parenting
+        Vector3 worldScale = item.transform.lossyScale;
+
+        // Attach to hand
+        item.transform.SetParent(handPoint, true);
+        item.transform.localPosition = Vector3.zero;
+        item.transform.localRotation = Quaternion.identity;
+
+        item.transform.localScale = new Vector3(
+            worldScale.x / handPoint.lossyScale.x,
+            worldScale.y / handPoint.lossyScale.y,
+            worldScale.z / handPoint.lossyScale.z
+        );
+
+        // Free slot on counter
+        counter.RemoveItem(item.Index);
+
+        yield return new WaitForSeconds(0.25f);
+
+        Destroy(item.gameObject);
+
+        // Return home
         yield return MoveTo(homePosition);
 
         Camera cam = Camera.main;

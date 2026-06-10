@@ -5,6 +5,8 @@ public class CounterItem : MonoBehaviour, IClickable
     private Counter counter;
     private int index;
 
+    public int Index => index;
+
     public void Setup(Counter counter, int index)
     {
         this.counter = counter;
@@ -13,11 +15,14 @@ public class CounterItem : MonoBehaviour, IClickable
 
     public void OnClick()
     {
-        if (counter != null)
-        {
-            counter.RemoveItem(index);
-        }
+        Shopkeeper shopkeeper = FindFirstObjectByType<Shopkeeper>();
 
-        Destroy(gameObject);
+        if (shopkeeper == null)
+            return;
+
+        if (shopkeeper.IsBusy())
+            return;
+
+        shopkeeper.RemoveCounterItem(this);
     }
 }
